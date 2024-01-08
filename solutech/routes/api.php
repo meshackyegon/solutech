@@ -19,13 +19,39 @@ use App\Http\Controllers\Api\AuthController;
 |
 */
 
-Route::group(['prefix' => 'v1'], function () {
-    Route::apiResource('books', BookController::class);
-    Route::apiResource('loans', BookLoansController::class);
-    Route::apiResource('users', UsersController::class);
-    Route::post('/register', [LoginController::class, 'register']);
-    Route::post('/login', [LoginController::class, 'login']);
-});
+    // Route::group(['prefix' => 'v1'], function () {
+    //     Route::post('register', [LoginController::class, 'register']);
+    //     Route::post('login', [LoginController::class, 'login']);
+    //     Route::middleware('auth:sanctum')->group(function () {
+    //         Route::apiResource('books', BookController::class);
+    //         Route::apiResource('loans', BookLoansController::class, 'index');
+    //         Route::apiResource('loans/bookId', BookLoansController::class, 'borrowBook');
+    //         Route::apiResource('loans/loanId', BookLoansController::class, 'approveLoan');
+    //         Route::apiResource('loans/loanId', BookLoansController::class,'ExtendLoan');
+    //         Route::apiResource('loans/loanId', BookLoansController::class,'returnBook');
+    //         Route::apiResource('users', UsersController::class);
+    //     });
+
+
+    // });
+
+    Route::group(['prefix' => 'v1'], function () {
+        Route::post('register', [LoginController::class, 'register']);
+        Route::post('login', [LoginController::class, 'login']);
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::apiResource('books', BookController::class);
+
+            // Correct usage of apiResource with options array
+            // Route::apiResource('loans', BookLoansController::class, ['except' => ['index']]);
+            Route::post('loans/{bookId}', [BookLoansController::class, 'borrowBook'])->name('loans.borrowBook');
+            Route::put('loans/{loanId}', [BookLoansController::class, 'approveLoan'])->name('loans.approveLoan');
+            Route::put('loans/{loanId}/extend', [BookLoansController::class, 'extendLoan'])->name('loans.extendLoan');
+            Route::put('loans/{loanId}/return', [BookLoansController::class, 'returnBook'])->name('loans.returnBook');
+
+            Route::apiResource('users', UsersController::class);
+        });
+    });
 
 
 

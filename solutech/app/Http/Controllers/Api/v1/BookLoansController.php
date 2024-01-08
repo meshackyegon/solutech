@@ -8,40 +8,94 @@ use App\Models\Books\Book_loan;
 
 class BookLoansController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        return response()->json(Book_loan::all());
+        $bookLoans = Book_loan::all();
+
+        return response()->json($bookLoans, 200);
     }
-    public function store(Request $request)
+    public function borrowBook(Request $request, $bookId)
     {
-        $book_loan = Book_loan::create($request->all());
-        return response()->json([
-            'success' => true,
-            'message' => 'Book Loan Stored',
-            'data' => $book_loan
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            // Add any additional validation rules as needed
         ]);
 
-    }
-    public function show(Book_loan $book_loan)
-    {
-        return response()->json($book_loan);
-    }
-    public function update(Request $request, Book_loan $book_loan)
-    {
-        $book_loan->update($request->all());
-        return response()->json([
-            'success' => true,
-            'message' => 'Book Loan Updated',
-            'data' => $book_loan
+        $bookLoan = Book_loan::create([
+            'user_id' => $request->user_id,
+            'book_id' => $bookId,
+            'loan_date' => now(),
+            'due_date' => now()->addDays(config('app.default_loan_period_days')),
+            'status' => 'pending', // You can set an initial status here
+            'added_by' => $request->user_id,
         ]);
+
+        return response()->json($bookLoan, 201);
     }
-    public function destroy(Book_loan $book_loan)
+
+    /**
+     * Approve a book loan.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $loanId
+     * @return \Illuminate\Http\Response
+     */
+    public function approveLoan(Request $request, $loanId)
     {
-        $book_loan->delete();
-        return response()->json([
-            'success'=> true,
-            'message'=> 'Book Loan Deleted',
-            'data'=> $book_loan
-            ]);
+        $request->validate([
+            'approval_status' => 'required|in:approved,rejected',
+            // Add any additional validation rules as needed
+        ]);
+
+        $bookLoan = Book_loan::findOrFail($loanId);
+
+        // Check if the user has the authority to approve loans (e.g., admin)
+        // Add your authorization logic here
+
+        $bookLoan->status = $request->approval_status;
+        $bookLoan->save();
+
+        return response()->json($bookLoan, 200);
+    }
+
+    /**
+     * Extend a book loan.
+     *
+     * @param  int  $loanId
+     * @return \Illuminate\Http\Response
+     */
+    public function extendLoan($loanId)
+    {
+        $bookLoan = Book_loan::findOrFail($loanId);
+
+        // Check if the book loan is eligible for extension
+        // Add your extension eligibility logic here
+
+        $bookLoan->extended = 'yes';
+        $bookLoan->extension_date = now();
+        $bookLoan->due_date = Carbon::parse($bookLoan->due_date)->addDays(config('app.extension_period_days'));
+        $bookLoan->save();
+
+        return response()->json($bookLoan, 200);
+    }
+
+    /**
+     * Return a borrowed book.
+     *
+     * @param  int  $loanId
+     * @return \Illuminate\Http\Response
+     */
+    public function returnBook($loanId)
+    {
+        $bookLoan = Book_loan::findOrFail($loanId);
+
+        // Add logic to calculate penalty if applicable
+        // Add your penalty calculation logic here
+
+        $bookLoan->return_date = now();
+        $bookLoan->status = 'returned';
+        $bookLoan->save();
+
+        return response()->json($bookLoan, 200);
     }
 }
