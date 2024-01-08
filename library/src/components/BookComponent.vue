@@ -36,27 +36,32 @@
 <script>
 import api from "@/apiService";
 import { ref, onMounted } from "vue";
+
 export default {
   data() {
     return {
       bookId: null,
-      book:null,
+      book: null,
     };
   },
   mounted() {
     this.bookId = this.$route.params.id;
-   
     console.log("Book ID:", this.bookId);
     this.fetchBookDetails();
   },
   methods: {
     fetchBookDetails() {
-      api.get(`/books/${this.bookId}`).then(response => {
+      const token = localStorage.getItem('token');
+      api.get(`/books/${this.bookId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }).then(response => {
         this.book = response.data.data;
         console.log("Book Details:", response.data.data);
       });
-    }
-  }
+    },
+  },
 };
 
 </script>

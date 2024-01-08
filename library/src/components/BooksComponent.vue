@@ -61,10 +61,23 @@ import { ref, onMounted } from 'vue';
 import apiService from '@/apiService';
 
 const books = ref([]);
+const token = localStorage.getItem('token');
 
 onMounted(async () => {
+  // try {
+  //   const response = await apiService.get('books');
+  //   books.value = response.data.data;
+  //   console.log(response.data);
+  // } catch (error) {
+  //   console.error('Error fetching books:', error);
+  // }
   try {
-    const response = await apiService.get('/books');
+    const response = await apiService.get('books', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     books.value = response.data.data;
     console.log(response.data);
   } catch (error) {

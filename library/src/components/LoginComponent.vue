@@ -38,7 +38,12 @@ export default {
         console.log('Login successful! Token:', token);
         if (token) {
           localStorage.setItem('token', token);
-          this.$router.push({ name: 'home' });
+          localStorage.setItem('email', this.email);
+          localStorage.setItem('user_id', token.user_id);
+          // localStorage.setItem('role', token.role);
+          localStorage.setItem('name', token.name);
+
+          this.$router.push({ name: 'books' });
         }
       } catch (error) {
         console.error('Error during login:', error);

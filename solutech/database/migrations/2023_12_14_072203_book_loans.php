@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('book_id');
             $table->date('loan_date');
             $table->date('due_date');
-            $table->date('return_date');
+            // $table->date('return_date');
             $table->string('extended');
             $table->date('extension_date');
             $table->integer('penalty_amount');
@@ -25,11 +25,12 @@ return new class extends Migration
             $table->string('status');
             $table->integer('added_by');
             $table->timestamps();
+            $table->timestamp('return_date')->nullable();
         });
     }
 
     public function down(): void
     {
-        
+
     }
 };

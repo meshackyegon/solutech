@@ -8,12 +8,7 @@ use App\Models\Books\Book_loan;
 
 class BookLoansController extends Controller
 {
-    public function index()
-    {
-        $bookLoans = Book_loan::all();
 
-        return response()->json($bookLoans, 200);
-    }
     public function borrowBook(Request $request, $bookId)
     {
         $request->validate([
@@ -27,7 +22,13 @@ class BookLoansController extends Controller
             'loan_date' => now(),
             'due_date' => now()->addDays(config('app.default_loan_period_days')),
             'status' => 'pending', // You can set an initial status here
+            'return_date' => now(), // or provide a specific value
             'added_by' => $request->user_id,
+            'extended' => false, // or provide a specific value
+            'extension_date'=>now(),
+            'penalty_amount'=>0,
+            'penalty_status'=>'paid',
+
         ]);
 
         return response()->json($bookLoan, 201);
@@ -97,5 +98,11 @@ class BookLoansController extends Controller
         $bookLoan->save();
 
         return response()->json($bookLoan, 200);
+    }
+    public function index()
+    {
+        $bookLoans = Book_loan::all();
+
+        return response()->json($bookLoans, 200);
     }
 }
